@@ -22,11 +22,9 @@ app.use("/api/tasks", taskRoutes);
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, "public")));
 
-// Handle all other routes by serving the React app - this should be LAST
-app.get("/", (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
