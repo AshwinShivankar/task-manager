@@ -23,7 +23,7 @@ app.use("/api/tasks", taskRoutes);
 app.use(express.static(path.join(__dirname, "public")));
 
 // Handle all other routes by serving the React app - this should be LAST
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
