@@ -12,19 +12,20 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, "public")));
-
-// Handle all other routes by serving the React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
 // Ensure database exists
 dbHelper.ensureDatabaseExists();
 
-// Routes
+// API Routes - these must come BEFORE the catch-all route
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, "public")));
+
+// Handle all other routes by serving the React app - this should be LAST
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Start server
 app.listen(PORT, () => {
