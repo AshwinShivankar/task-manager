@@ -6,16 +6,29 @@ const {
 } = require("../utils/dbHelper");
 const { authenticateToken } = require("../middleware/auth");
 const router = express.Router();
+const redisClient = require("../utils/redisClient");
 
 // All routes in this file are protected with authentication
 router.use(authenticateToken);
 
 // Get all tasks for the user
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
+    const cacheKey = `tasks:${req.user.id}`;
+
+    // 1. Try getting from Redis first
+    const cachedTasks = await redisClient.get(cacheKey);
+
+    if (cachedTasks) {
+      console.log("Serving tasks from Redis cache");
+      return res.status(200).json(JSON.parse(cachedTasks));
+    }
+
+    // 2. If not cached, read from file
     const tasks = readDatabase(TASKS_DB_PATH);
     const userTasks = tasks.filter((task) => task.userId === req.user.id);
-
+    // ✅ Store in Redis for next time
+    await redisClient.set(cacheKey, JSON.stringify(userTasks));
     res.status(200).json(userTasks);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -23,7 +36,7 @@ router.get("/", (req, res) => {
 });
 
 // Create a new task
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { title, description } = req.body;
 
@@ -44,7 +57,8 @@ router.post("/", (req, res) => {
 
     tasks.push(newTask);
     writeDatabase(TASKS_DB_PATH, tasks);
-
+    // Invalidate Redis cache
+    await redisClient.del(`tasks:${req.user.id}`);
     res.status(201).json(newTask);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -52,7 +66,7 @@ router.post("/", (req, res) => {
 });
 
 // Update a task (toggle complete or edit)
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, completed } = req.body;
@@ -77,6 +91,8 @@ router.put("/:id", (req, res) => {
     };
 
     writeDatabase(TASKS_DB_PATH, tasks);
+    // Invalidate cache
+    await redisClient.del(`tasks:${req.user.id}`);
 
     res.status(200).json(tasks[taskIndex]);
   } catch (err) {
@@ -85,7 +101,7 @@ router.put("/:id", (req, res) => {
 });
 
 // Delete a task
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -99,6 +115,8 @@ router.delete("/:id", (req, res) => {
     }
 
     writeDatabase(TASKS_DB_PATH, filteredTasks);
+    // Invalidate cache
+    await redisClient.del(`tasks:${req.user.id}`);
 
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (err) {

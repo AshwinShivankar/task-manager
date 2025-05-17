@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Install dependencies and run tests (Backend)
+        working-directory: ./server
+        run: |
+          npm install
+          npm test
+
+      - name: Install dependencies (Frontend)
+        working-directory: ./client
+        run: |
+          npm install
+
+      - name: Build Docker images
+        run: |
+          docker build -t your-dockerhub-username/backend ./server
+          docker build -t your-dockerhub-username/frontend ./client
+
+      - name: Push images to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push your-dockerhub-username/backend
+          docker push your-dockerhub-username/frontend
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker pull your-dockerhub-username/backend
+            docker pull your-dockerhub-username/frontend
+            docker stop backend || true
+            docker stop frontend || true
+            docker rm backend || true
+            docker rm frontend || true
+            docker run -d -p 5000:5000 --name backend your-dockerhub-username/backend
+            docker run -d -p 80:80 --name frontend your-dockerhub-username/frontend

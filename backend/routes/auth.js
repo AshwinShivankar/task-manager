@@ -8,6 +8,7 @@ const {
 } = require("../utils/dbHelper");
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"; // Use environment variable in production
+const redisClient = require("../utils/redisClient");
 
 // Register user
 router.post("/register", async (req, res) => {
@@ -70,7 +71,10 @@ router.post("/login", async (req, res) => {
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-
+    // Store token in Redis with user ID as key
+    await redisClient.set(`auth:${user.id}`, token, {
+      EX: 3600, // expire in 1 hour
+    });
     res.status(200).json({
       token,
       user: { id: user.id, username: user.username },

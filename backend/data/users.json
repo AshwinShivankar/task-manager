@@ -7,5 +7,30 @@
     "id": "1744549869855",
     "username": "sssss",
     "password": "$2b$10$Cm/uMBuTZO0D3i38V5N6GuZv0D5e9nyKC.6W282N5TbS1Gb7G0.pe"
+  },
+  {
+    "id": "1747410678661",
+    "username": "testuser",
+    "password": "$2b$10$MYCDl3wXKk361B1Lx1lTjexyXAESuqCphnTE0OVCSzx3I1YEl10Ra"
+  },
+  {
+    "id": "1747410779814",
+    "username": "taskuser",
+    "password": "$2b$10$0sLq7pt2QKI5vcilreCY..wOTgaQOTtDtPC6WdOzeYMU.ntDhHVNq"
+  },
+  {
+    "id": "1747410908377",
+    "username": "testuser_1747410908266",
+    "password": "$2b$10$3aTFw2GCDk4Wi7TMYgBlFuAbkWZMeagZkm8plkmBahKHGNu.76L4a"
+  },
+  {
+    "id": "1747413828660",
+    "username": "testuser_1747413828560",
+    "password": "$2b$10$oFs.PjqqhfnCBbdz.3X8zelpZZ2pihu7Ydn2TBtPWVsB0v3Kqk/J."
+  },
+  {
+    "id": "1747418518881",
+    "username": "testuser_1747418518738",
+    "password": "$2b$10$hXsUbbWR6jyYM7jt4ddryenCnHg.yn3f2H6i5UagVjS7TCJer3ENm"
   }
 ]
