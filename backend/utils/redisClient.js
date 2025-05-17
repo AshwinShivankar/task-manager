@@ -1,4 +1,4 @@
-const redis = require("redis");
+import { createClient } from "redis";
 
 // Create Redis client
 const redisClient = createClient({
