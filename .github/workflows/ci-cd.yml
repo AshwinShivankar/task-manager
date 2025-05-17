@@ -4,16 +4,19 @@ on:
   push:
     branches: [main]
 
+env:
+  DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
 
@@ -30,14 +33,14 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t your-dockerhub-username/backend ./backend
-          docker build -t your-dockerhub-username/frontend ./frontend
+          docker build -t $DOCKERHUB_USERNAME/backend ./backend
+          docker build -t $DOCKERHUB_USERNAME/frontend ./frontend
 
       - name: Push images to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker push your-dockerhub-username/backend
-          docker push your-dockerhub-username/frontend
+          docker push $DOCKERHUB_USERNAME/backend
+          docker push $DOCKERHUB_USERNAME/frontend
 
   deploy:
     needs: build-and-test
@@ -52,11 +55,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker pull your-dockerhub-username/backend
-            docker pull your-dockerhub-username/frontend
+            docker pull $DOCKERHUB_USERNAME/backend
+            docker pull $DOCKERHUB_USERNAME/frontend
             docker stop backend || true
             docker stop frontend || true
             docker rm backend || true
             docker rm frontend || true
-            docker run -d -p 5000:5000 --name backend your-dockerhub-username/backend
-            docker run -d -p 80:80 --name frontend your-dockerhub-username/frontend
+            docker run -d -p 5000:5000 --name backend $DOCKERHUB_USERNAME/backend
+            docker run -d -p 80:80 --name frontend $DOCKERHUB_USERNAME/frontend
