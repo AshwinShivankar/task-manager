@@ -18,20 +18,20 @@ jobs:
           node-version: "16"
 
       - name: Install dependencies and run tests (Backend)
-        working-directory: ./server
+        working-directory: ./backend
         run: |
           npm install
           npm test
 
       - name: Install dependencies (Frontend)
-        working-directory: ./client
+        working-directory: ./frontend
         run: |
           npm install
 
       - name: Build Docker images
         run: |
-          docker build -t your-dockerhub-username/backend ./server
-          docker build -t your-dockerhub-username/frontend ./client
+          docker build -t your-dockerhub-username/backend ./backend
+          docker build -t your-dockerhub-username/frontend ./frontend
 
       - name: Push images to Docker Hub
         run: |
