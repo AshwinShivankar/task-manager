@@ -1,7 +1,8 @@
 // src/utils/api.js
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000";
+// const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://task-manager-production-1bb3.up.railway.app";
 
 const api = axios.create({
   baseURL: BASE_URL,
